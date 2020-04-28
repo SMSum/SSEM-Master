@@ -13,7 +13,7 @@ SSEM_Engine_Bore - The Bore of the engine
 Ex: 81
 
 
-SSEM_Engine_Stroke - The Stroke of the engine	
+SSEM_Engine_Stroke - The Stroke of the engine     
 Ex: 77
 
 SSEM_Engine_Cylinders - The number of cylinders of the engine   
