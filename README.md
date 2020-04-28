@@ -1,6 +1,3 @@
-# SSEM-Master
-A current WIP Simulated Engine Add-on for Garrys Mod Sandbox, currently being used on MBS 
-
 # Summers Simulated Engine Mod
 
 SSEM is a current WIP Simulated Engine Add-on for Garrys Mod Sandbox, currently being used on MBS. 
