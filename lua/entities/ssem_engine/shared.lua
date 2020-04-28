@@ -48,6 +48,8 @@ function ENT:SetEngineConfig(Engine_Configuration) self:GetTable().EngineConfig 
 function ENT:GetEngineConfig() return self:GetTable().EngineConfig end
 
 
+
+
 -- --Bore
 -- function ENT:SetBore(Engine_Bore)  self:GetTable().BoreVal = Engine_Bore end
 -- function ENT:GetBore() return self:GetTable().BoreVal end
