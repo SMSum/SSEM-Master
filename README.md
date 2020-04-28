@@ -45,4 +45,4 @@ Linking is straight forward, WHEELS is wired to an entity marker containing all 
 Closed currently
 
 ## License
-[MIT](https://choosealicense.com/licenses/mit/)
+[GPL v3.0](https://choosealicense.com/licenses/gpl-3.0/)
