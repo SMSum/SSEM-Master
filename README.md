@@ -29,7 +29,8 @@ SSEM_Engine_Gearbox_FinalDrive - The Final Drive of the transmission
 Ex: -4.300
 
 SSEM_Engine_Gearbox_Ratios - The Transmission ratios, number of gears is infinite, final ratio is reverse  
-Ex: 0.861,1.000,1.384,2.022,3.587, -0.85
+Ex: 0.861,1.000,1.384,2.022,3.587,-0.85
+(DO NOT PUT SPACES, USE COMMAS TO SEPERATE EVERYTHING)
 
 
 To adjust an engine, modify a value in the console and either respawn or right click on the engine with the SSEM tool equiped.
