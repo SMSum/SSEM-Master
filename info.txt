@@ -1,0 +1,11 @@
+"AddonInfo"
+{
+	"name" "SSEM"
+	"version" "1.0"
+	"up_date" "6/18/18"
+	"author_name" "Summer"
+	"author_email" "n/a"
+	"author_url" "n/a"
+	"info" "A Simulated Engine Mod Remake By Summer"
+	"override" "0"
+}?
