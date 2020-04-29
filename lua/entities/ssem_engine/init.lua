@@ -116,7 +116,7 @@ function ENT:Initialize()
 	self.Gearbox_Ratios = {0}
 	self.Gearbox_FinalDrive = -1
 
-	self:ShiftGear(0)
+	
 end
 
 function ENT:OnRemove()
@@ -161,7 +161,7 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 	self.Gearbox_Ratios = {}
 
 	for i=1, table.Count(Gearbox_Ratio_Parse) - 1 do 
-		self.Gearbox_Ratios[i] = Gearbox_Ratio_Parse[i]
+		self.Gearbox_Ratios[table.Count(Gearbox_Ratio_Parse) - i] = Gearbox_Ratio_Parse[i]
 	end
 	self.Gearbox_Ratios[-1] = Gearbox_Ratio_Parse[table.Count(Gearbox_Ratio_Parse)] --Add the negative (reverse gear)
 
