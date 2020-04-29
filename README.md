@@ -50,7 +50,15 @@ To adjust an engine, modify a value in the console and either respawn or right c
 
 Linking is straight forward, WHEELS is wired to an advanced entity marker containing all the wheels. Make sure the engine is parallel to the wheels and weleded to the chassis. If the car is going backwards, either turn around the engine physically or flip the final drive positive or negative.
 
-
+## TODO
+-Enable V-Engines (Writen, not stable)          
+-Enable Turbos (Writen, not stable)         
+-Allow for reading of stored information such as the current engines bore, stroke, gear ratios, ect       
+-UI         
+-Models       
+-Sounds     
+-Enable Fuel (Writen, not implimented fully)        
+    
 ## Contributing
 TBA
 
