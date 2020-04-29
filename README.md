@@ -57,3 +57,6 @@ Closed currently
 
 ## License
 [GPL v3.0](https://choosealicense.com/licenses/gpl-3.0/)
+
+## Feedback and Bug reporting
+[CLICK HERE](https://forms.gle/c44ashzucMv6FRkm8)
