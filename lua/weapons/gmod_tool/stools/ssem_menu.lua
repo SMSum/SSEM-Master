@@ -47,8 +47,9 @@ local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinde
 	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	
 	--Create Ent--
-	SSEMEngine:Spawn()
-
+	SSEMEngine:Spawn() --Refresh to fix broken gears
+	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+	
 
 
 	local phys = SSEMEngine:GetPhysicsObject()

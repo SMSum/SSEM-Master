@@ -114,9 +114,10 @@ function ENT:Initialize()
 	
 
 	self.Gearbox_Ratios = {0}
+	self.Gearbox_Ratios[-1] = -1
 	self.Gearbox_FinalDrive = -1
 
-	
+	self:ShiftGear(0)
 end
 
 function ENT:OnRemove()
@@ -215,7 +216,7 @@ self:StoreInfo(engineInfo)
 
 self:ShowOutput()
 
-self:ShiftGear(0)
+
 
 end
 
