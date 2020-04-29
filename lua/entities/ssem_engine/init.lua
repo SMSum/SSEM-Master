@@ -215,6 +215,7 @@ self:StoreInfo(engineInfo)
 
 self:ShowOutput()
 
+self:ShiftGear(0)
 
 end
 
