@@ -53,7 +53,7 @@ Linking is straight forward, WHEELS is wired to an advanced entity marker contai
 
 
 ## Contributing
-Closed currently
+TBA
 
 ## License
 [GPL v3.0](https://choosealicense.com/licenses/gpl-3.0/)
