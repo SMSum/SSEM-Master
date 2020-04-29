@@ -16,10 +16,20 @@ ENT.OverlayUpdateRate = 2
 ENT.LastOverlayUpdate = 1
 ENT.WireDebugName     = "SSEM ENGINE"
 
+function ENT:PreEntityCopy()
+	local Data = self:GetStoredInfo()
+	duplicator.StoreEntityModifier( self, "engineData", Data )
+end
+
+function DupeFinished(Player, Entity, Data) 
+	Entity:Setup(Data.Bore, Data.Stroke, Data.Cylinders, Data.Airflow, Data.Idle, Data.Redline, Data.FlywheelMass, 0, Data.Config, Data.GearboxFinal, Data.GearboxRatio, Data.SoundON, Data.SoundOff, Data.Starter)
+	Entity:SetPlayer(Player)
+end
+
+duplicator.RegisterEntityModifier( "engineData", DupeFinished )
 
 
 function ENT:Initialize()
-
 
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -102,9 +112,11 @@ function ENT:Initialize()
 	self.Key_S = 0 -- S / brake
 	self.Key_Sp = 0 -- Shift / clutch
 	
+
+	self.Gearbox_Ratios = {0}
+	self.Gearbox_FinalDrive = -1
+
 	self:ShiftGear(0)
-
-
 end
 
 function ENT:OnRemove()
@@ -183,14 +195,14 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 				self.CSoundEngineOff:PlayEx(0, 100)
 		end
 
---[[
+
 local engineInfo = {}
 engineInfo.Bore = Engine_Bore
 engineInfo.Stroke = Engine_Stroke
 engineInfo.Cylinders = Engine_Cylinders
 engineInfo.Airflow = Engine_Airflow
 engineInfo.Idle = Engine_Idle
-engineInfo.Redline = Engine_Redline
+engineInfo.Redline = self:GetRedline()
 engineInfo.FlywheelMass = Engine_FlywheelMass
 engineInfo.GearboxFinal = Gearbox_Finaldrive
 engineInfo.GearboxRatio = Gearbox_Gears
@@ -199,8 +211,11 @@ engineInfo.SoundOff = Engine_SoundOff
 engineInfo.Starter = Engine_Starter
 engineInfo.Config = Engine_Configuration
 
-]]--
+self:StoreInfo(engineInfo)
+
 self:ShowOutput()
+
+
 end
 
 
@@ -578,8 +593,7 @@ end
 
 function ENT:Use(activator, caller, ent)
 	if IsValid(caller) and caller:IsPlayer() then
-		--Use for debug or maybe a feature?
-		PrintTable(self:GetTable())
+
 	end
 end
 

@@ -46,7 +46,8 @@ function ENT:GetDisplacement() return self.Engine_Displacement end
 --Engine Config
 function ENT:SetEngineConfig(Engine_Configuration) self:GetTable().EngineConfig = Engine_Configuration end
 function ENT:GetEngineConfig() return self:GetTable().EngineConfig end
-
+--Cuts a corner by saving the entire table instead of using 20 million commands, bless
+--Could consolidate this entire area down into just getting info table, writing and saving when needed. Might do at a later date!
 function ENT:StoreInfo(Engine_Info) self:GetTable().EngineInfoTable = Engine_Info end
 function ENT:GetStoredInfo() return self:GetTable().EngineInfoTable end
 

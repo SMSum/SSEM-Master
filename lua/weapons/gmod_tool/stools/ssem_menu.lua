@@ -23,7 +23,7 @@ if CLIENT then
     CreateConVar( "SSEM_Engine_Redline", "7600", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_FlywheelMass", "8", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Gearbox_FinalDrive", "-4.300", FCVAR_USERINFO)
-    CreateConVar( "SSEM_Engine_Gearbox_Ratios", "0.861,1.000,1.384,2.022,3.587, -0.85", FCVAR_USERINFO)
+    CreateConVar( "SSEM_Engine_Gearbox_Ratios", "0.861,1.000,1.384,2.022,3.587,-0.85", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Sound_EngineOn", "acf_extra/vehiclefx/engines/fsp/i4_honda_B18C5.wav", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Sound_EngineOff", "acf_extra/vehiclefx/engines/l4/ae86_2000rpm.wav", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Sound_EngineStarter", "acf_extra/vehiclefx/starters/starter2.wav", FCVAR_USERINFO)
@@ -62,11 +62,11 @@ local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinde
 	phys:SetMass(Engine_Mass)
 
 	--Deletion Shit--
-	undo.Create("SSEM_Custom_Engine")
+	undo.Create("SSEM Engine")
 		undo.AddEntity( SSEMEngine )
 		undo.SetPlayer( ply )
 	undo.Finish()
-	ply:AddCleanup( "SSEM_Custom_Engine", SSEMEngine )
+	ply:AddCleanup( "SSEM Engine", SSEMEngine )
 
 end
 
@@ -111,7 +111,7 @@ function TOOL:RightClick( trace )
 		local caller = self:GetOwner()
 		trace.Entity:Setup(caller:GetInfoNum( "SSEM_Engine_Bore" , -1), caller:GetInfoNum( "SSEM_Engine_Stroke" , -1), caller:GetInfoNum( "SSEM_Engine_Cylinders" , -1), caller:GetInfoNum( "SSEM_Engine_Airflow" , -1), caller:GetInfoNum( "SSEM_Engine_Idle" , -1), caller:GetInfoNum( "SSEM_Engine_Redline" , -1), caller:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1), caller:GetInfoNum( "SSEM_Engine_Displacement" , -1), caller:GetInfoNum( "SSEM_Engine_Configuration" , -1), caller:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1), caller:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOn", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOff", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1))
 		trace.Entity:ShowOutput()
-		--trace.Entity:DestroySounds()
+		
 	end
 		
 end
@@ -119,6 +119,7 @@ end
 function TOOL:Reload( trace )
 if CLIENT then return false end
 	local ply = self:GetOwner()
+	--Disabled until UI is made
 	--concommand.Run(ply, "ssem_menu_open")
 	--ply:ConCommand( "ssem_menu_open" )
 end
