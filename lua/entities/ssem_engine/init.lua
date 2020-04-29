@@ -17,7 +17,10 @@ ENT.LastOverlayUpdate = 1
 ENT.WireDebugName     = "SSEM ENGINE"
 
 
+
 function ENT:Initialize()
+
+
 	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetMoveType(MOVETYPE_VPHYSICS)
 	self:SetSolid(SOLID_VPHYSICS)
@@ -28,13 +31,9 @@ function ENT:Initialize()
 	self.TargetPlayers = false
 	
 	self:TriggerInput("On", 0)
-	self:ShowOutput()
+	
 	
 	-- Added all sounds for now, can be changed to different classes later on
-	self.SoundEngineOn   = "acf_extra/vehiclefx/engines/fsp/i4_honda_B18C5.wav"
-	self.SoundEngineOff  = "acf_extra/vehiclefx/engines/l4/ae86_2000rpm.wav"
-	self.SoundStart      = "ssem_engine/SSEM_Starter.wav"
-	self.SoundBeep       = "buttons/bell1.wav"
 	
 	self.SoundTurbo      = "acf_engines/turbine_small.wav"
 	self.SoundBOV        = "acf_extra/vehiclefx/boost/turbo_hiss1.wav"
@@ -45,8 +44,8 @@ function ENT:Initialize()
 	self.Engine_TorqueTable = {1.35, 1.86, 1.54, 1.23, 1.11}
 	self.Engine_RevLimiter = true
 	
-	-- Gearbox settings, mby moved somewhere else later?
-	
+	-- Gearbox settings, maybe moved somewhere else later?
+
 	self.Gearbox_Delay = 0.15 -- 150 (in seconds)
 	self.Gearbox_ClutchSpeed = 0.2
 	self.Gearbox_LockValue = 0.05
@@ -57,9 +56,9 @@ function ENT:Initialize()
 	self.Turbo_Inertia = 0.025
 	self.Turbo_FlowScale = 80
 	self.Turbo_DragScale = 0.01
-	self.Turbo_PSIMax = 12
+	self.Turbo_PSIMax = 18
 	self.Turbo_AirPressure = 28.4
-	self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure)
+	--self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure)
 	self.Turbo_MaxRPM = 140000
 	
 	-- Fuel settings, should probably also be moved somewhere else later
@@ -68,7 +67,7 @@ function ENT:Initialize()
 	self.Fuel_Density = 0.72 -- 0.72 | 0.745 ( Petrol | Diesel )
 	self.Air_Density = 0.0012
 	
-	-- Some variables, probably no touchy
+	-- Some variables, no touchy
 	self.Flywheel = {}
 	self.Brake = 0
 	
@@ -97,25 +96,22 @@ function ENT:Initialize()
 	self.Throttle_Delay = false
 	self.Clutch_Delay = false
 	
-	self.BeepTimerDecay = 0
-	self.BeepTimer = 0
 	self.GearTimer = 0
 	
 	self.Key_W = 0 -- W / throttle
 	self.Key_S = 0 -- S / brake
 	self.Key_Sp = 0 -- Shift / clutch
-
-	
 	
 	self:ShiftGear(0)
+
+
 end
 
 function ENT:OnRemove()
 	Wire_Remove(self)
-	-- TestSound:Stop()
 end
 
-function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_IdleRev, Engine_RevLimiterOverwrite, EngineRedlineVal, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears)
+function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, EngineRedlineVal, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	if(Engine_Configuration == 1 and Engine_Cylinders < 5)then
 		self:SetModel("models/sem/engines/sem_v4.mdl")
 	elseif(Engine_Configuration == 1 and Engine_Cylinders < 7)then
@@ -135,13 +131,9 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 	self:SetCylinders(Engine_Cylinders)
 	self:SetAirflow(Engine_Airflow)
 	self:SetIdle(Engine_Idle)
-	-- self:SetIdleRev(Engine_IdleRev) -- Remove this
-	self:SetRevCalcOverwrite(Engine_RevLimiterOverwrite)
 	self:SetRedline(EngineRedlineVal)
 	self:SetFlywheelMass(Engine_FlywheelMass)
-	-- self:SetDisplacement(Engine_Displacement) -- Calculated internally?
 	self:SetEngineConfig(Engine_Configuration)
-	--TFW this does nothing
 	
 	-- Calculate some stuff
 	self.Engine_Displacement = round((Engine_Cylinders * pi * Engine_Bore ^ 2 * Engine_Stroke / 4000000), 1)
@@ -161,10 +153,54 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 	end
 	self.Gearbox_Ratios[-1] = Gearbox_Ratio_Parse[table.Count(Gearbox_Ratio_Parse)] --Add the negative (reverse gear)
 
-	
-
-
 	self.Gearbox_FinalDrive = Gearbox_Finaldrive
+
+	self.SoundEngineOn   = Engine_SoundOn
+	self.SoundEngineOff  = Engine_SoundOff
+	self.SoundStart      = Engine_Starter
+
+
+		--Engine Sound Creation and Refreshing for when updated :)
+		if not self.CSoundEngineOn then
+				self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
+				self.CSoundEngineOn:PlayEx(0, 100)
+			end
+
+		if self.CSoundEngineOn then
+			self.CSoundEngineOn:Stop()
+			self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
+				self.CSoundEngineOn:PlayEx(0, 100)
+		end
+
+		if not self.CSoundEngineOff then
+				self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
+				self.CSoundEngineOff:PlayEx(0, 100)
+			end
+
+		if self.CSoundEngineOff then
+			self.CSoundEngineOff:Stop()
+			self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
+				self.CSoundEngineOff:PlayEx(0, 100)
+		end
+
+--[[
+local engineInfo = {}
+engineInfo.Bore = Engine_Bore
+engineInfo.Stroke = Engine_Stroke
+engineInfo.Cylinders = Engine_Cylinders
+engineInfo.Airflow = Engine_Airflow
+engineInfo.Idle = Engine_Idle
+engineInfo.Redline = Engine_Redline
+engineInfo.FlywheelMass = Engine_FlywheelMass
+engineInfo.GearboxFinal = Gearbox_Finaldrive
+engineInfo.GearboxRatio = Gearbox_Gears
+engineInfo.SoundON = Engine_SoundOn
+engineInfo.SoundOff = Engine_SoundOff
+engineInfo.Starter = Engine_Starter
+engineInfo.Config = Engine_Configuration
+
+]]--
+self:ShowOutput()
 end
 
 
@@ -227,23 +263,11 @@ function ENT:DestroySounds()
 		self.CSoundStart:Stop()
 	end
 	
-	if self.CSoundBeep then
-		self.CSoundBeep:Stop()
-	end
-	
 	
 	if self.CSoundTurbo then
 		self.CSoundTurbo:Stop()
 	end
 	
-	-- if self.CSoundBOV then
-	-- 	self.CSoundBOV:Stop()
-	-- end
-	
-	
-	-- if self.CSoundGearChange then
-	-- 	self.CSoundGearChange:Stop()
-	-- end
 end
 
 
@@ -264,33 +288,12 @@ function ENT:ShiftGear(gear)
 		self.Gearbox_Ratio = self.Gearbox_Ratios[self.Gearbox_Gear] * self.Gearbox_FinalDrive
 	end
 	
-	-- if self.CSoundGearChange then
-	-- 	self.CSoundGearChange:Stop()
-	-- end
-	
-	-- self.CSoundGearChange = CreateSound(self, self.SoundGearChange)
-	-- self.CSoundGearChange:PlayEx(0.3, 60)
 	sound.Play(self.SoundGearChange, self:GetPos(), 100, 60, 0.3)
 	
 	self.GearTimer = self.Gearbox_Delay
 	
 	self.Throttle_Delay = true
 	self.Clutch_Delay = true
-	
-	--[[local phys = self:GetPhysicsObject()
-	if IsValid(phys) then
-		local Engine_Mass = phys:GetMass()
-		for k, ent in pairs(self.Flywheel) do
-			local phys = ent:GetPhysicsObject()
-			if IsValid(phys) then
-				local mass = max(Engine_Mass * self.Gearbox_Ratio, Engine_Mass)
-				phys:GetMass(mass)
-				
-				local v = max(mass, 40)
-				phys:SetInertia(Vector(v, v, 2))
-			end
-		end
-	end]]
 	
 	WireLib.TriggerOutput(self, "CurrentGear", self.Gearbox_Gear)
 end
@@ -318,56 +321,12 @@ function ENT:Think()
 	self.Brake = (self.Brake + (self.Key_S - self.Brake) * 0.025) * self.Key_S
 	
 	self.Engine_Active = ((self.Engine_RPM > 350 and 1 or 0) * sign(self.Engine_Ignition)) ~= 0
-	--[[
-	-- Beep
-	if self.BeepTimerDecay > 0 then
-		self.BeepTimerDecay = self.BeepTimerDecay - dt
-		print(self.BeepTimerDecay)
-		if self.BeepTimerDecay <= 0 then
-			if self.CSoundBeep then
-				self.CSoundBeep:Stop()
-			end
-		end
-	end
-	
-	if self.BeepTimer > 0 then
-		print(self.BeepTimer)
-		self.BeepTimer = self.BeepTimer - dt
-		
-		if self.BeepTimer <= 0 then
-			print("work")
-			self.BeepTimerDecay = 1
-			self.CSoundBeep = CreateSound(self, self.SoundBeep)
-			self.CSoundBeep:PlayEx(0.2, 200)
-		end
-	end
-		--]]
-	if self.Engine_Ignition > 0 and not self.Engine_Active then --Currently broken lol
-			timer.Create("beep", 1, 0, function()
-			--sound.Play( "buttons/bell1.wav", self:GetPos(), 75, 100, 1 )
-		end)
-	end
 
-	if self.Engine_Active then
-		timer.Stop("beep")
-	end
 
 	if self.Last_Engine_Active ~= self.Engine_Active then
 		WireLib.TriggerOutput(self, "Active", self.Engine_Active and 1 or 0)
 		
 		if self.Engine_Active then
-			self.BeepTimer = 0
-			
-			if not self.CSoundEngineOn then
-				self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
-				self.CSoundEngineOn:PlayEx(1, 100)
-			end
-			
-			if not self.CSoundEngineOff then
-				self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
-				self.CSoundEngineOff:PlayEx(1, 100)
-			end
-			
 			if self.Turbo and not self.CSoundTurbo then
 				self.CSoundTurbo = CreateSound(self, self.SoundTurbo)
 				self.CSoundTurbo:PlayEx(1, 100)
@@ -422,11 +381,7 @@ function ENT:Think()
 	else
 		self.Gearbox_Clutch = self.Key_Sp
 	end
-	-- if self.Key_Sh then
-	-- 	self.Gearbox_Clutch = max(self.Gearbox_Clutch, 0.25)
-	-- end
-	-- #Gearbox_Clutch = max(self.Gearbox_Clutch, 0.02, (self.Engine_RPM / self:GetRedline()) * 0.1)
-	
+
 	-- Engine related things
 	self.Engine_RealRPM = (self.Engine_RPM * self.Gearbox_Clutch) + ((self.Flywheel_RPM * self.Gearbox_Ratio) * (1 - self.Gearbox_Clutch))
 	
@@ -457,7 +412,6 @@ function ENT:Think()
 	self.Engine_PowerCut = clamp(pc, 0, 1) * round(self.Engine_Throttle)
 	
 	-- TODO, probably in gearbox entity once created
-	-- if (clk("Gear_Change")) {Throttle_Delay = 0, Clutch_Delay = 0}
 	if self.GearTimer > 0 then
 		self.GearTimer = self.GearTimer - dt
 		
@@ -490,20 +444,7 @@ function ENT:Think()
 		end
 		
 		if self.Engine_Throttle ~= self.Last_Engine_Throttle and self.Engine_Throttle == 0 then
-			-- if self.CSoundBOV then
-			-- 	self.CSoundBOV:Stop()
-			-- end
-			
-			-- self.CSoundBOV = CreateSound(self, self.SoundBOV)
-			-- self.CSoundBOV:PlayEx(
-			-- 	max(self.Turbo_RPM / self.Turbo_MaxRPM - 0.2, 0),
-			-- 	85 + 25 * (self.Turbo_RPM / self.Turbo_MaxRPM)
-			-- )
-			-- self:EmitSound(self.SoundBOV, nil,
-			-- 	85 + 25 * (self.Turbo_RPM / self.Turbo_MaxRPM),
-			-- 	max(self.Turbo_RPM / self.Turbo_MaxRPM - 0.2, 0)
-			-- , 0)
-			
+
 			sound.Play(self.SoundBOV, self:GetPos(), 100,
 				85 + 25 * (self.Turbo_RPM / self.Turbo_MaxRPM),
 			 	max(self.Turbo_RPM / self.Turbo_MaxRPM - 0.2, 0)
@@ -515,7 +456,7 @@ function ENT:Think()
 	
 	self.Last_Engine_Throttle = self.Engine_Throttle
 	
-	-- FMore flywheel stuff
+	-- More flywheel stuff
 	local Engine_FlywheelMass = self:GetFlywheelMass()
 	local fpi = (self.Engine_PeakTorque * Engine_Torque - self.Flywheel_PowerInertia) / Engine_FlywheelMass
 	self.Flywheel_PowerInertia = max(fpi, self.Engine_PeakTorque * Engine_Torque)
@@ -637,8 +578,8 @@ end
 
 function ENT:Use(activator, caller, ent)
 	if IsValid(caller) and caller:IsPlayer() then
-		
-
+		--Use for debug or maybe a feature?
+		PrintTable(self:GetTable())
 	end
 end
 
@@ -677,3 +618,4 @@ function ENT:TriggerInput(iname, value)
 		self:ShiftGear(self.Gearbox_Gear - 1)
 	end
 end
+

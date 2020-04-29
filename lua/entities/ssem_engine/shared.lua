@@ -47,6 +47,9 @@ function ENT:GetDisplacement() return self.Engine_Displacement end
 function ENT:SetEngineConfig(Engine_Configuration) self:GetTable().EngineConfig = Engine_Configuration end
 function ENT:GetEngineConfig() return self:GetTable().EngineConfig end
 
+function ENT:StoreInfo(Engine_Info) self:GetTable().EngineInfoTable = Engine_Info end
+function ENT:GetStoredInfo() return self:GetTable().EngineInfoTable end
+
 
 
 
