@@ -755,7 +755,7 @@ end
 
 if CLIENT then end
 print("------------------------------------------------------------------ SSEM LOADED ------------------------------------------------------------------")
-concommand.Add("ssem_menu_open",function() menuFrame:SetVisible(true) end)
-concommand.Add("ssem_menu_close", function() menuFrame:SetVisible(false) end)
+--concommand.Add("ssem_menu_open",function() menuFrame:SetVisible(true) end)
+--concommand.Add("ssem_menu_close", function() menuFrame:SetVisible(false) end)
 hook.Add("Initialize","ssem_frame_create",ssem_frame_create)
 

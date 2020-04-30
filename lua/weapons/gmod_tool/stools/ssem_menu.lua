@@ -47,7 +47,8 @@ local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinde
 	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	
 	--Create Ent--
-	SSEMEngine:Spawn() --Refresh to fix broken gears
+	SSEMEngine:Spawn() 
+	--Refresh to fix broken gears n shit
 	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	
 
@@ -112,7 +113,10 @@ function TOOL:RightClick( trace )
 		local caller = self:GetOwner()
 		trace.Entity:Setup(caller:GetInfoNum( "SSEM_Engine_Bore" , -1), caller:GetInfoNum( "SSEM_Engine_Stroke" , -1), caller:GetInfoNum( "SSEM_Engine_Cylinders" , -1), caller:GetInfoNum( "SSEM_Engine_Airflow" , -1), caller:GetInfoNum( "SSEM_Engine_Idle" , -1), caller:GetInfoNum( "SSEM_Engine_Redline" , -1), caller:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1), caller:GetInfoNum( "SSEM_Engine_Displacement" , -1), caller:GetInfoNum( "SSEM_Engine_Configuration" , -1), caller:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1), caller:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOn", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOff", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1))
 		trace.Entity:ShowOutput()
-		
+		-- Set new mass if updated :)
+		Engine_Mass = math.Round((math.floor(trace.Entity:GetDisplacement() * 45 + trace.Entity:GetCylinders() * 4 + math.Clamp(trace.Entity:GetEngineConfig(), 0, 1) * 10)), 0)
+		Engine_Mass = Engine_Mass + trace.Entity:GetFlywheelMass()
+		trace.Entity:GetPhysicsObject():SetMass(Engine_Mass)
 	end
 		
 end

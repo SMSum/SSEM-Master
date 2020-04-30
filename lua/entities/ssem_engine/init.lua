@@ -112,12 +112,23 @@ function ENT:Initialize()
 	self.Key_S = 0 -- S / brake
 	self.Key_Sp = 0 -- Shift / clutch
 	
-
+	--Null Values, they get changed anyway
 	self.Gearbox_Ratios = {0}
 	self.Gearbox_Ratios[-1] = -1
 	self.Gearbox_FinalDrive = -1
 
 	self:ShiftGear(0)
+
+	--These are blank values that prevents the engine from erroring out when pasting a larger dupe
+	--They get changed right after duplication is finished pasting but there is one tick prior that causes nil values so this has to be done...
+	self:SetBore(1)
+	self:SetStroke(1)
+	self:SetCylinders(4)
+	self:SetAirflow(1)
+	self:SetIdle(600)
+	self:SetRedline(8000)
+	self:SetFlywheelMass(8)
+	self.Engine_PeakTorque = 100
 end
 
 function ENT:OnRemove()
@@ -138,7 +149,8 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 	elseif(Engine_Configuration == 0)then
 		self:SetModel("models/sem/misc/sem_flywheel.mdl")
 	end
-	
+
+
 	self:SetBore(Engine_Bore)
 	self:SetStroke(Engine_Stroke)
 	self:SetCylinders(Engine_Cylinders)
@@ -403,6 +415,7 @@ function ENT:Think()
 	self.Engine_RealRPM = (self.Engine_RPM * self.Gearbox_Clutch) + ((self.Flywheel_RPM * self.Gearbox_Ratio) * (1 - self.Gearbox_Clutch))
 	
 	local Engine_Throttle = self.Key_W --* (self.Key_Alt and 1 or 0.5)
+
 	local it = self.Engine_IdleThrottle + (min(self.Engine_RPM, self.Engine_RealRPM) < self:GetIdle() and self.Engine_IdleRev or -self.Engine_IdleRev)
 	self.Engine_IdleThrottle = clamp(it, 0, 0.5) * (self.Engine_Active and 1 or 0)
 	
