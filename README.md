@@ -3,8 +3,10 @@
 SSEM is a current WIP Simulated Engine Add-on for Garrys Mod Sandbox, currently being used on MBS. 
 
 ## Usage
-There is no UI to use SSEM currently          
-The engines are modified by using the following client convars (console commands) and are read at creation and update       
+There is no UI to use SSEM currently                
+[Here is a video showcasing how to set it up](https://www.youtube.com/watch?v=QUo-YrQsCP8)              
+The engines are modified by using the following client convars (console commands) and are read at creation and update               
+
 
 SSEM_Engine_Bore - The Bore of the engine   
 Ex: 81
