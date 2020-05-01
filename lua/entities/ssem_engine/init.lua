@@ -23,6 +23,8 @@ end
 
 function DupeFinished(Player, Entity, Data) 
 	Entity:Setup(Data.Bore, Data.Stroke, Data.Cylinders, Data.Airflow, Data.Idle, Data.Redline, Data.FlywheelMass, 0, Data.Config, Data.GearboxFinal, Data.GearboxRatio, Data.SoundON, Data.SoundOff, Data.Starter)
+	Entity:SetEngineConfig(Data.Config)
+	Entity:SetRedline(Data.Redline)
 	Entity:SetPlayer(Player)
 end
 
@@ -51,7 +53,7 @@ function ENT:Initialize()
 	self.SoundGearChange = "physics/plaster/ceiling_tile_impact_hard3.wav"
 	
 	-- Should probably be set from sseem_menu
-	self.Engine_TorqueTable = {1.35, 1.86, 1.54, 1.23, 1.11}
+	self.Engine_TorqueTable = {1.35, 1.86, 1.54, 1.23, 1.11} --Hard coded for now :)
 	self.Engine_RevLimiter = true
 	
 	-- Gearbox settings, maybe moved somewhere else later?
@@ -59,17 +61,6 @@ function ENT:Initialize()
 	self.Gearbox_Delay = 0.15 -- 150 (in seconds)
 	self.Gearbox_ClutchSpeed = 0.2
 	self.Gearbox_LockValue = 0.05
-	
-	-- Turbo settings, probably should be moved somewhere else later on
-	self.Turbo = false
-	self.Turbo_Exp = 1.5
-	self.Turbo_Inertia = 0.025
-	self.Turbo_FlowScale = 80
-	self.Turbo_DragScale = 0.01
-	self.Turbo_PSIMax = 18
-	self.Turbo_AirPressure = 28.4
-	--self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure)
-	self.Turbo_MaxRPM = 140000
 	
 	-- Fuel settings, should probably also be moved somewhere else later
 	self.Fuel_Enabled = false
@@ -129,6 +120,26 @@ function ENT:Initialize()
 	self:SetRedline(8000)
 	self:SetFlywheelMass(8)
 	self.Engine_PeakTorque = 100
+
+
+	-- Turbo settings, probably should be moved somewhere else later on
+	--[[
+	self.Turbo = false
+	self.Turbo_Exp = 1.5
+	self.Turbo_Inertia = 0.025
+	self.Turbo_FlowScale = 80
+	self.Turbo_DragScale = 0.01
+	self.Turbo_PSIMax = 18
+	self.Turbo_AirPressure = 28.4
+	--self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure) --Disabled for now, causes errors when duped since its up here
+	self.Turbo_MaxRPM = 140000
+	--]]
+
+if self:GetEngineConfig() == 0 then 
+	self.VEngineFix = 1
+else
+	self.VEngineFix = -1
+end
 end
 
 function ENT:OnRemove()
@@ -226,9 +237,11 @@ engineInfo.Config = Engine_Configuration
 
 self:StoreInfo(engineInfo)
 
+
+
+
+
 self:ShowOutput()
-
-
 
 end
 
@@ -372,7 +385,12 @@ function ENT:Think()
 	local Flywheel_RPM = 0
 	local Flywheel_Count = 0
 	
-	local up = self:GetUp()
+	if (self.VEngineFix == -1) then 
+	up = self:GetRight() 
+	elseif (self.VEngineFix == 1) then 
+	up = -self:GetUp() 
+	end
+
 	for k, ent in pairs(self.Flywheel) do
 		local phys = ent:GetPhysicsObject()
 		if IsValid(phys) then
@@ -401,7 +419,7 @@ function ENT:Think()
 	end
 	
 	self.Flywheel_RPM = Flywheel_RPM
-	WireLib.TriggerOutput(self, "Wheel_RPM", self.Flywheel_RPM)
+	WireLib.TriggerOutput(self, "Wheel_RPM", self.Flywheel_RPM * -1)
 	
 	-- Gearbox stuff, dont know what to do with it yet
 	self.Gearbox_Clutch = self.Gearbox_Clutch - self.Gearbox_Clutch * self.Gearbox_ClutchSpeed
@@ -504,7 +522,13 @@ function ENT:Think()
 		
 		if Flywheel_Power ~= 0 and Flywheel_Power == Flywheel_Power --[[This so we dont get crazy velocity diffusing because of nan]] then
 
-			local right = self:GetRight()
+
+			if (self.VEngineFix == -1) then 
+				right = -self:GetUp()
+			elseif (self.VEngineFix == 1) then 
+				up = self:GetRight()
+			end
+
 			local forward = self:GetForward() * 39.37
 			local wheelpower = Flywheel_Power / Flywheel_Count
 			
