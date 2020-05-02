@@ -53,7 +53,6 @@ function ENT:Initialize()
 	self.SoundGearChange = "physics/plaster/ceiling_tile_impact_hard3.wav"
 	
 	-- Should probably be set from sseem_menu
-	self.Engine_TorqueTable = {1.35, 1.86, 1.54, 1.23, 1.11} --Hard coded for now :)
 	self.Engine_RevLimiter = true
 	
 	-- Gearbox settings, maybe moved somewhere else later?
@@ -124,15 +123,15 @@ function ENT:Initialize()
 
 	-- Turbo settings, probably should be moved somewhere else later on
 	--[[
-	self.Turbo = false
-	self.Turbo_Exp = 1.5
-	self.Turbo_Inertia = 0.025
-	self.Turbo_FlowScale = 80
-	self.Turbo_DragScale = 0.01
-	self.Turbo_PSIMax = 18
-	self.Turbo_AirPressure = 28.4
-	--self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure) --Disabled for now, causes errors when duped since its up here
-	self.Turbo_MaxRPM = 140000
+	self.Turbo = true
+	self.Turbo_Exp = 0.25
+	self.Turbo_Inertia = 0.018
+	self.Turbo_FlowScale = 70
+	self.Turbo_DragScale = 0.025
+	self.Turbo_PSIMax = 45
+	self.Turbo_AirPressure = 24.7
+	self.Turbo_MaxFlow = self:GetRedline() * ((self.Turbo_PSIMax + self.Turbo_AirPressure) / self.Turbo_AirPressure) --Disabled for now, causes errors when duped since its up here
+	self.Turbo_MaxRPM = 150000
 	--]]
 
 if self:GetEngineConfig() == 0 then 
@@ -237,7 +236,7 @@ engineInfo.Config = Engine_Configuration
 
 self:StoreInfo(engineInfo)
 
-
+self.Engine_TorqueTable = {0.6, 0.7, 1.1, 1.0, 0.7}
 
 
 
@@ -526,7 +525,7 @@ function ENT:Think()
 			if (self.VEngineFix == -1) then 
 				right = -self:GetUp()
 			elseif (self.VEngineFix == 1) then 
-				up = self:GetRight()
+				right = -self:GetRight()
 			end
 
 			local forward = self:GetForward() * 39.37
