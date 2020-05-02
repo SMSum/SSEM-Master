@@ -27,8 +27,7 @@ if CLIENT then
     CreateConVar( "SSEM_Engine_Sound_EngineOn", "acf_extra/vehiclefx/engines/fsp/i4_honda_B18C5.wav", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Sound_EngineOff", "acf_extra/vehiclefx/engines/l4/ae86_2000rpm.wav", FCVAR_USERINFO)
     CreateConVar( "SSEM_Engine_Sound_EngineStarter", "acf_extra/vehiclefx/starters/starter2.wav", FCVAR_USERINFO)
-    --CreateConVar( "SSEM_Engine_Configuration", "0", FCVAR_USERINFO) --Disabled until other engine configurations are stable
-
+    CreateConVar( "SSEM_Engine_Configuration", "0", FCVAR_USERINFO) 
 
     
 end
@@ -42,7 +41,6 @@ local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinde
 	SSEMEngine:SetPos(trace.HitPos - trace.HitNormal + Vector(0, 0, 10))
 	SSEMEngine:SetAngles(Angle(0, ply:GetAngles()[2] + 90, 0))
 	SSEMEngine:SetPlayer(ply)
-	SSEMEngine:SetColor(Color(144,144,144,255))
 	SSEMEngine:DrawShadow(true)
 	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	
@@ -87,8 +85,8 @@ function TOOL:LeftClick( trace, owner )
 	local Engine_Redline = ply:GetInfoNum( "SSEM_Engine_Redline" , -1)
 	local Engine_FlywheelMass = ply:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1)
 	local Engine_Displacement = ply:GetInfoNum( "SSEM_Engine_Displacement" , -1)
-	--local Engine_Configuration = ply:GetInfoNum( "SSEM_Engine_Configuration" , -1) LOCKED until V-Engines can applytorque correctly :(
-	local Engine_Configuration = 0
+	local Engine_Configuration = ply:GetInfoNum( "SSEM_Engine_Configuration" , -1) 
+	--local Engine_Configuration = 0
 
 	local Gearbox_Finaldrive = ply:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1)
 	local Gearbox_Gears = ply:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1)
