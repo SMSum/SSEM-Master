@@ -16,9 +16,12 @@ ENT.OverlayUpdateRate = 2
 ENT.LastOverlayUpdate = 1
 ENT.WireDebugName     = "SSEM ENGINE"
 
+
+
 function ENT:PreEntityCopy()
 	local Data = self:GetStoredInfo()
 	duplicator.StoreEntityModifier( self, "engineData", Data )
+	self.BaseClass.PreEntityCopy( self )
 end
 
 function DupeFinished(Player, Entity, Data) 
@@ -134,11 +137,9 @@ function ENT:Initialize()
 	self.Turbo_MaxRPM = 150000
 	--]]
 
-if self:GetEngineConfig() == 0 then 
-	self.VEngineFix = 1
-else
-	self.VEngineFix = -1
-end
+	self.Engine_TorqueTable = {0, 0, 0, 0, 0}
+
+
 end
 
 function ENT:OnRemove()
@@ -241,6 +242,13 @@ self.Engine_TorqueTable = {0.6, 0.7, 1.1, 1.0, 0.7}
 
 
 self:ShowOutput()
+
+	if self:GetEngineConfig() == 0 then 
+		self.VEngineFix = 1
+	else
+		self.VEngineFix = -1
+	end
+
 
 end
 
@@ -393,9 +401,21 @@ function ENT:Think()
 	for k, ent in pairs(self.Flywheel) do
 		local phys = ent:GetPhysicsObject()
 		if IsValid(phys) then
-			local rpm = phys:GetAngleVelocity():Dot(ent:WorldToLocal(up + ent:GetPos())) / 6
-			Flywheel_RPM = Flywheel_RPM + rpm
+			--local rpm = phys:GetAngleVelocity():Dot(ent:WorldToLocal(up + ent:GetPos())) / 6
+			
+			local fix = 1
+
+				if self:GetEngineConfig() == 0 then
+				if (self:WorldToLocal(phys:GetEntity():GetPos()).z > 0) then fix = -1 else fix = 1 end
+					elseif self:GetEngineConfig() == 1 then
+				if (self:WorldToLocal(phys:GetEntity():GetPos()).y > 0) then fix = -1 else fix = 1 end
+			end
+			
+			local rpm = phys:GetAngleVelocity()[2] / 6 * fix
+
+			Flywheel_RPM = Flywheel_RPM - rpm
 			Flywheel_Count = Flywheel_Count + 1
+			Flywheel_RPM = Flywheel_RPM
 			
 			if self.Key_S > 0 then
 				local force = rpm * 500 * self.Brake
@@ -418,7 +438,7 @@ function ENT:Think()
 	end
 	
 	self.Flywheel_RPM = Flywheel_RPM
-	WireLib.TriggerOutput(self, "Wheel_RPM", self.Flywheel_RPM * -1)
+	WireLib.TriggerOutput(self, "Wheel_RPM", self.Flywheel_RPM)
 	
 	-- Gearbox stuff, dont know what to do with it yet
 	self.Gearbox_Clutch = self.Gearbox_Clutch - self.Gearbox_Clutch * self.Gearbox_ClutchSpeed
@@ -429,7 +449,7 @@ function ENT:Think()
 	end
 
 	-- Engine related things
-	self.Engine_RealRPM = (self.Engine_RPM * self.Gearbox_Clutch) + ((self.Flywheel_RPM * self.Gearbox_Ratio) * (1 - self.Gearbox_Clutch))
+	self.Engine_RealRPM = (self.Engine_RPM * self.Gearbox_Clutch) + ((self.Flywheel_RPM * self.Gearbox_Ratio ) * (1 - self.Gearbox_Clutch))
 	
 	local Engine_Throttle = self.Key_W --* (self.Key_Alt and 1 or 0.5)
 
@@ -530,22 +550,30 @@ function ENT:Think()
 
 			local forward = self:GetForward() * 39.37
 			local wheelpower = Flywheel_Power / Flywheel_Count
-			
+			local fix = 1
 			for k, ent in pairs(self.Flywheel) do
 				local phys = ent:GetPhysicsObject()
 				if IsValid(phys) then
 					local pos = ent:GetPos()
-					phys:ApplyForceOffset(right *  wheelpower, pos - forward)
-					phys:ApplyForceOffset(right * -wheelpower, pos + forward)
+					if self:GetEngineConfig() == 0 then
+							if (self:WorldToLocal(phys:GetEntity():GetPos()).z > 0) then fix = -1 else fix = 1 end
+						elseif self:GetEngineConfig() == 1 then
+							if (self:WorldToLocal(phys:GetEntity():GetPos()).y > 0) then fix = -1 else fix = 1 end
+					end
+					--phys:ApplyForceOffset(right *  wheelpower, pos - forward)
+					phys:ApplyForceOffset(phys:GetEntity():GetUp() * -wheelpower * -fix, phys:GetEntity():LocalToWorld(Vector(39.37, 0, 0)))
+					phys:ApplyForceOffset(phys:GetEntity():GetUp() * wheelpower * -fix, phys:GetEntity():LocalToWorld(Vector(-39.37, 0, 0)))
+					--phys:ApplyForceOffset(right * -wheelpower, pos + forward)
 				end
 			end
 			
 			local phys = self:GetPhysicsObject()
 			if IsValid(phys) then
 				local pos = self:GetPos()
-				phys:ApplyForceOffset(right * -Flywheel_Power, pos - forward)
-				phys:ApplyForceOffset(right *  Flywheel_Power, pos + forward)
+				phys:ApplyForceOffset(right * wheelpower, pos - forward)
+				phys:ApplyForceOffset(right *  -wheelpower, pos + forward)
 			end
+			
 		end
 	   
 		Gearbox_Feedback = (Flywheel_RPM * self.Gearbox_Ratio - self.Engine_RPM) / Engine_FlywheelMass
@@ -631,7 +659,20 @@ end
 
 function ENT:Use(activator, caller, ent)
 	if IsValid(caller) and caller:IsPlayer() then
+		print("---------")
+			for k, ent in pairs(self.Flywheel) do
+				local phys = ent:GetPhysicsObject()
+				local pos = ent:GetPos()
+					if IsValid(phys) then
+						--print("Engine "..self:GetPos().y)
+						--print("Wheel "..phys:GetEntity():GetPos().y)
+						--print(phys:GetEntity():WorldToLocal(self:GetPos()))
 
+						
+					end
+			end
+
+			
 	end
 end
 
