@@ -15,7 +15,7 @@ include("shared.lua")
 ENT.OverlayUpdateRate = 2
 ENT.LastOverlayUpdate = 1
 ENT.WireDebugName     = "SSEM ENGINE"
-
+duplicator.Allow("ssem_engine")
 
 
 function ENT:PreEntityCopy()
@@ -25,13 +25,14 @@ function ENT:PreEntityCopy()
 end
 
 function DupeFinished(Player, Entity, Data) 
-	Entity:Setup(Data.Bore, Data.Stroke, Data.Cylinders, Data.Airflow, Data.Idle, Data.Redline, Data.FlywheelMass, 0, Data.Config, Data.GearboxFinal, Data.GearboxRatio, Data.SoundON, Data.SoundOff, Data.Starter)
+	Entity:Setup(Data.Bore, Data.Stroke, Data.Cylinders, Data.Airflow, Data.Idle, Data.Redline, Data.FlywheelMass, Data.Config, Data.GearboxFinal, Data.GearboxRatio, Data.SoundON, Data.SoundOff, Data.Starter)
 	Entity:SetEngineConfig(Data.Config)
 	Entity:SetRedline(Data.Redline)
 	Entity:SetPlayer(Player)
 end
 
 duplicator.RegisterEntityModifier( "engineData", DupeFinished )
+
 
 
 function ENT:Initialize()
@@ -146,7 +147,7 @@ function ENT:OnRemove()
 	Wire_Remove(self)
 end
 
-function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, EngineRedlineVal, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, EngineRedlineVal, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	if(Engine_Configuration == 1 and Engine_Cylinders < 5)then
 		self:SetModel("models/sem/engines/sem_v4.mdl")
 	elseif(Engine_Configuration == 1 and Engine_Cylinders < 7)then
@@ -196,28 +197,7 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 	self.SoundStart      = Engine_Starter
 
 
-		--Engine Sound Creation and Refreshing for when updated :)
-		if not self.CSoundEngineOn then
-				self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
-				self.CSoundEngineOn:PlayEx(0, 100)
-			end
-
-		if self.CSoundEngineOn then
-			self.CSoundEngineOn:Stop()
-			self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
-				self.CSoundEngineOn:PlayEx(0, 100)
-		end
-
-		if not self.CSoundEngineOff then
-				self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
-				self.CSoundEngineOff:PlayEx(0, 100)
-			end
-
-		if self.CSoundEngineOff then
-			self.CSoundEngineOff:Stop()
-			self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
-				self.CSoundEngineOff:PlayEx(0, 100)
-		end
+		
 
 
 local engineInfo = {}
@@ -249,6 +229,18 @@ self:ShowOutput()
 		self.VEngineFix = -1
 	end
 
+
+	if self.CSoundEngineOn then
+		self.CSoundEngineOn:Stop()
+		self.CSoundEngineOn = CreateSound(self, self.SoundEngineOn)
+		self.CSoundEngineOn:PlayEx(0, 100)
+	end
+
+	if self.CSoundEngineOff then
+		self.CSoundEngineOff:Stop()
+		self.CSoundEngineOff = CreateSound(self, self.SoundEngineOff)
+		self.CSoundEngineOff:PlayEx(0, 100)
+	end
 
 end
 
@@ -374,13 +366,14 @@ function ENT:Think()
 
 	if self.Last_Engine_Active ~= self.Engine_Active then
 		WireLib.TriggerOutput(self, "Active", self.Engine_Active and 1 or 0)
-		
+		--[[
 		if self.Engine_Active then
 			if self.Turbo and not self.CSoundTurbo then
 				self.CSoundTurbo = CreateSound(self, self.SoundTurbo)
 				self.CSoundTurbo:PlayEx(1, 100)
 			end
 		end
+		--]]
 	end
 	
 	if not self.Engine_Active and self.Engine_Ignition == 2 and self.Gearbox_Clutch == 1 then
@@ -400,9 +393,7 @@ function ENT:Think()
 
 	for k, ent in pairs(self.Flywheel) do
 		local phys = ent:GetPhysicsObject()
-		if IsValid(phys) then
-			--local rpm = phys:GetAngleVelocity():Dot(ent:WorldToLocal(up + ent:GetPos())) / 6
-			
+		if IsValid(phys) then	
 			local fix = 1
 
 				if self:GetEngineConfig() == 0 then
@@ -451,7 +442,7 @@ function ENT:Think()
 	-- Engine related things
 	self.Engine_RealRPM = (self.Engine_RPM * self.Gearbox_Clutch) + ((self.Flywheel_RPM * self.Gearbox_Ratio ) * (1 - self.Gearbox_Clutch))
 	
-	local Engine_Throttle = self.Key_W --* (self.Key_Alt and 1 or 0.5)
+	local Engine_Throttle = self.Key_W
 
 	local it = self.Engine_IdleThrottle + (min(self.Engine_RPM, self.Engine_RealRPM) < self:GetIdle() and self.Engine_IdleRev or -self.Engine_IdleRev)
 	self.Engine_IdleThrottle = clamp(it, 0, 0.5) * (self.Engine_Active and 1 or 0)
@@ -459,6 +450,7 @@ function ENT:Think()
 	self.Engine_Throttle = max(Engine_Throttle, self.Engine_IdleThrottle)
 	
 	-- Fuel
+	--[[
 	if self.Fuel_Enabled then
 		local fl = self.Fuel_Liters - (self.Engine_Active and (self.Engine_Displacement * (self.Engine_RPM / 2) * self.Air_Density * self.Fuel_Air_Ratio / self.Fuel_Density / 3900 * max(self.Engine_Throttle, 0.01)) or 0)
 		self.Fuel_Liters = clamp(fl, 0, self.Fuel_Capacity)
@@ -471,7 +463,8 @@ function ENT:Think()
 		-- When using this, might wanna only set mass once a second to not cause any unneccesery physics calls or w/e
 		-- FUELENTITY:setMass(round(self.Fuel_Liters * self.Fuel_Density + self.Fuel_Capacity * 0.1, 1))
 	end
-	
+	--]]
+
 	-- More engine things
 	self.Engine_Throttle = self.Engine_Throttle * (self.Engine_Active and 1 or 0) * ((not self.Throttle_Delay) and 1 or 0)
 	
@@ -498,6 +491,7 @@ function ENT:Think()
 	local Engine_Torque = clamp(et, 0, 1)
 	
 	-- Turbo
+	--[[
 	if self.Turbo then
 		local Turbo_PSI = self.Turbo_PSIMax * self.Turbo_RPM / self.Turbo_MaxRPM
 		local Turbo_Boost = (Turbo_PSI + self.Turbo_AirPressure) / self.Turbo_AirPressure
@@ -520,7 +514,7 @@ function ENT:Think()
 		
 		Engine_Torque = Engine_Torque * (Turbo_Boost / 1.25)
 	end
-	
+	--]]
 	self.Last_Engine_Throttle = self.Engine_Throttle
 	
 	-- More flywheel stuff
@@ -560,10 +554,8 @@ function ENT:Think()
 						elseif self:GetEngineConfig() == 1 then
 							if (self:WorldToLocal(phys:GetEntity():GetPos()).y > 0) then fix = -1 else fix = 1 end
 					end
-					--phys:ApplyForceOffset(right *  wheelpower, pos - forward)
 					phys:ApplyForceOffset(phys:GetEntity():GetUp() * -wheelpower * -fix, phys:GetEntity():LocalToWorld(Vector(39.37, 0, 0)))
 					phys:ApplyForceOffset(phys:GetEntity():GetUp() * wheelpower * -fix, phys:GetEntity():LocalToWorld(Vector(-39.37, 0, 0)))
-					--phys:ApplyForceOffset(right * -wheelpower, pos + forward)
 				end
 			end
 			
@@ -595,6 +587,10 @@ function ENT:Think()
 	self.Engine_Volume = self.Engine_Volume + (max(self.Engine_Throttle ^ 1.25, (self.Engine_RPM / 9000) * 0.25) - self.Engine_Volume) * 0.2
 	
 	local pitch = self.Engine_Active and self.Engine_RPM / 9000 * 155 + 50 or 0
+
+	 
+	
+
 	if self.CSoundEngineOn then
 		self.CSoundEngineOn:ChangePitch(pitch)
 		self.CSoundEngineOn:ChangeVolume(self.Engine_Volume * 0.75)
@@ -625,7 +621,6 @@ function ENT:ShowOutput()
 	if (self:GetEngineConfig() == 1) then
 		self:SetOverlayText(
 			"SSEM Engine \n V"..self:GetCylinders().."\n Displacement: "..self:GetDisplacement().."L\n Peak Torque: "..EnginePeakTorque.." NM \n Peak HP: "..EnginePeakHP.." HP".."\n Redline: "..self:GetRedline().." RPM\n Flywheel Mass: "..self:GetFlywheelMass().." KG"
-			--"WIP"
 		)
 	else
 		self:SetOverlayText(
@@ -659,20 +654,26 @@ end
 
 function ENT:Use(activator, caller, ent)
 	if IsValid(caller) and caller:IsPlayer() then
-		print("---------")
 			for k, ent in pairs(self.Flywheel) do
 				local phys = ent:GetPhysicsObject()
 				local pos = ent:GetPos()
 					if IsValid(phys) then
-						--print("Engine "..self:GetPos().y)
-						--print("Wheel "..phys:GetEntity():GetPos().y)
-						--print(phys:GetEntity():WorldToLocal(self:GetPos()))
 
-						
+						RunConsoleCommand("SSEM_Engine_Bore", self:GetStoredInfo().Bore)
+						RunConsoleCommand("SSEM_Engine_Stroke", self:GetStoredInfo().Stroke)
+						RunConsoleCommand("SSEM_Engine_Cylinders", self:GetStoredInfo().Cylinders)
+						RunConsoleCommand("SSEM_Engine_Airflow", self:GetStoredInfo().Airflow)
+						RunConsoleCommand("SSEM_Engine_Idle", self:GetStoredInfo().Idle)
+						RunConsoleCommand("SSEM_Engine_Redline", self:GetStoredInfo().Redline)
+						RunConsoleCommand("SSEM_Engine_FlywheelMass", self:GetStoredInfo().FlywheelMass)
+						RunConsoleCommand("SSEM_Engine_Gearbox_FinalDrive", self:GetStoredInfo().GearboxFinal)
+						RunConsoleCommand("SSEM_Engine_Gearbox_Ratios", self:GetStoredInfo().GearboxRatio)
+						RunConsoleCommand("SSEM_Engine_Sound_EngineOn", self:GetStoredInfo().SoundOn)
+						RunConsoleCommand("SSEM_Engine_Sound_EngineOff", self:GetStoredInfo().SoundOff)
+						RunConsoleCommand("SSEM_Engine_Sound_EngineStarter", self:GetStoredInfo().Starter)
+						RunConsoleCommand("SSEM_Engine_Configuration", self:GetStoredInfo().Config)
 					end
-			end
-
-			
+			end	
 	end
 end
 
@@ -710,5 +711,30 @@ function ENT:TriggerInput(iname, value)
 	elseif iname == "ShiftDown" and value ~= 0 then
 		self:ShiftGear(self.Gearbox_Gear - 1)
 	end
+
+
+SoundEngineOnEX = ""
+SoundEngineOffEX = ""
+if (self.SoundEngineOn != nil) then
+	SoundEngineOnEX = self.SoundEngineOn
 end
+if (self.SoundEngineOff != nil) then
+	SoundEngineOffEX = self.SoundEngineOff
+end
+--Engine Sound Creation and Refreshing for when updated :)
+		if not self.CSoundEngineOn then
+				self.CSoundEngineOn = CreateSound(self, SoundEngineOnEX)
+				self.CSoundEngineOn:PlayEx(0, 100)
+			end
+
+
+		if not self.CSoundEngineOff then
+				self.CSoundEngineOff = CreateSound(self, SoundEngineOffEX)
+				self.CSoundEngineOff:PlayEx(0, 100)
+			end
+
+		
+
+end
+
 

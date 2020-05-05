@@ -9,9 +9,23 @@ if CLIENT then
 	
 	language.Add( "tool.ssem_menu.name", "SSEM Menu" )
     language.Add( "tool.ssem_menu.desc", "Spawns a Simulated Engine!" )
-    language.Add( "tool.ssem_menu.0", "Primary: Spawn Engine, Secondary: Update Engine, Reload: Open creation window (DISABLED)" )
     language.Add( "SBoxLimit_SSEM_Custom_Engines", "Maximum SSEM Custom Engines Reached!" )
 
+
+TOOL.Information = {}
+local function ToolInfo(name, desc)
+    table.insert(TOOL.Information, { name = name })
+    language.Add("tool.ssem_menu." .. name, desc)
+end
+
+-- Info
+ToolInfo("info_1", "Spawns a Simulated Engine, currently no UI. Use the console ConVars to edit engine settings.")
+-- left click
+ToolInfo("left_1", "Spawn an engine")
+-- Right click
+ToolInfo("right_1", "Update an engine")
+-- Use 
+ToolInfo("use_1", "Copy engine data to console ConVars")
 
     --ENGINE CONVARS-- DONT TOUCH!
     --Base Config is a Toyota 4AGE
@@ -33,23 +47,20 @@ if CLIENT then
 end
 
 -- Moved to up here to not pollute _G
-local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter) 
+local function MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter) 
+
 	--Setting Up Engine Values--
 	local SSEMEngine = ents.Create("ssem_engine")
 	if (!SSEMEngine:IsValid()) then return false end
 	--Setting Pos, Ang and owner--
-	SSEMEngine:SetPos(trace.HitPos - trace.HitNormal + Vector(0, 0, 10))
-	SSEMEngine:SetAngles(Angle(0, ply:GetAngles()[2] + 90, 0))
+	SSEMEngine:SetPos(Pos)
+	SSEMEngine:SetAngles(Ang)
 	SSEMEngine:SetPlayer(ply)
 	SSEMEngine:DrawShadow(true)
-	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	
 	--Create Ent--
 	SSEMEngine:Spawn() 
-	--Refresh to fix broken gears n shit
-	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
-	
-
 
 	local phys = SSEMEngine:GetPhysicsObject()
 	if phys:IsValid() then
@@ -61,20 +72,20 @@ local function MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinde
 	Engine_Mass = Engine_Mass + SSEMEngine:GetFlywheelMass()
 	phys:SetMass(Engine_Mass)
 
-	--Deletion Shit--
-	undo.Create("SSEM Engine")
-		undo.AddEntity( SSEMEngine )
-		undo.SetPlayer( ply )
-	undo.Finish()
-	ply:AddCleanup( "SSEM Engine", SSEMEngine )
-
+	return SSEMEngine
 end
+
+duplicator.RegisterEntityClass("ssem_engine", function(ply, data)
+	return MakeEngine(ply, data.Pos, data.Angle, data.EntityMods.engineData.Stroke, data.EntityMods.engineData.Bore, data.EntityMods.engineData.Cylinders, data.EntityMods.engineData.Airflow, data.EntityMods.engineData.Idle, data.EntityMods.engineData.Redline, data.EntityMods.engineData.FlywheelMass, data.EntityMods.engineData.Config, data.EntityMods.engineData.GearboxFinal, data.EntityMods.engineData.GearboxRatio, data.EntityMods.engineData.SoundOn, data.EntityMods.engineData.SoundOff, data.EntityMods.engineData.Starter) --duplicator.GenericDuplicatorFunction(ply, data) true
+end, "Data")
+
 
 function TOOL:LeftClick( trace, owner )
 
 	if CLIENT then return true end
-	
+		
 	local ply = self:GetOwner()
+	--if not ply:CheckLimit("ssem_engine") then return false end
 
 	-- Use local variables, dont pollute _G
 	local Engine_Bore = ply:GetInfoNum( "SSEM_Engine_Bore" , -1)
@@ -84,9 +95,8 @@ function TOOL:LeftClick( trace, owner )
 	local Engine_Idle = ply:GetInfoNum( "SSEM_Engine_Idle" , -1)
 	local Engine_Redline = ply:GetInfoNum( "SSEM_Engine_Redline" , -1)
 	local Engine_FlywheelMass = ply:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1)
-	local Engine_Displacement = ply:GetInfoNum( "SSEM_Engine_Displacement" , -1)
 	local Engine_Configuration = ply:GetInfoNum( "SSEM_Engine_Configuration" , -1) 
-	--local Engine_Configuration = 0
+
 
 	local Gearbox_Finaldrive = ply:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1)
 	local Gearbox_Gears = ply:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1)
@@ -95,10 +105,16 @@ function TOOL:LeftClick( trace, owner )
 	local Engine_SoundOff = ply:GetInfo( "SSEM_Engine_Sound_EngineOff", -1)
 	local Engine_Starter = ply:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1)
 
-
-	local SSEMEngine = MakeEngine(trace, ply, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Displacement, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+	local Pos = trace.HitPos - trace.HitNormal + Vector(0, 0, 10)
+	local Ang = Angle(0,0,0)
+	local SSEMEngine = MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
 	if not IsValid(SSEMEngine) then return end	
 
+	undo.Create("SSEM Engine")
+		undo.AddEntity( SSEMEngine )
+		undo.SetPlayer( ply )
+	undo.Finish()
+	ply:AddCleanup( "SSEM Engine", SSEMEngine )
 
 end
 
