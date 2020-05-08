@@ -3,7 +3,11 @@ TOOL.Name			= "#tool.ssem_menu.name"
 TOOL.Command		= nil
 TOOL.ConfigName		= ""
 
-cleanup.Register( "SSEM_Custom_Engine" )
+
+--THINGS TO DO--
+--Add cleanup
+
+
 
 if CLIENT then
 	
@@ -47,7 +51,7 @@ ToolInfo("use_1", "Copy engine data to console ConVars")
 end
 
 -- Moved to up here to not pollute _G
-local function MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter) 
+local function MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter, DupeSpawn) 
 
 	--Setting Up Engine Values--
 	local SSEMEngine = ents.Create("ssem_engine")
@@ -61,7 +65,10 @@ local function MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cyli
 	
 	--Create Ent--
 	SSEMEngine:Spawn() 
-
+	if (DupeSpawn == 0) then
+	SSEMEngine:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+	end
+	
 	local phys = SSEMEngine:GetPhysicsObject()
 	if phys:IsValid() then
 		phys:Wake()
@@ -75,8 +82,9 @@ local function MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cyli
 	return SSEMEngine
 end
 
+
 duplicator.RegisterEntityClass("ssem_engine", function(ply, data)
-	return MakeEngine(ply, data.Pos, data.Angle, data.EntityMods.engineData.Stroke, data.EntityMods.engineData.Bore, data.EntityMods.engineData.Cylinders, data.EntityMods.engineData.Airflow, data.EntityMods.engineData.Idle, data.EntityMods.engineData.Redline, data.EntityMods.engineData.FlywheelMass, data.EntityMods.engineData.Config, data.EntityMods.engineData.GearboxFinal, data.EntityMods.engineData.GearboxRatio, data.EntityMods.engineData.SoundOn, data.EntityMods.engineData.SoundOff, data.EntityMods.engineData.Starter) --duplicator.GenericDuplicatorFunction(ply, data) true
+	return MakeEngine(ply, data.Pos, data.Angle, data.EntityMods.engineData.Stroke, data.EntityMods.engineData.Bore, data.EntityMods.engineData.Cylinders, data.EntityMods.engineData.Airflow, data.EntityMods.engineData.Idle, data.EntityMods.engineData.Redline, data.EntityMods.engineData.FlywheelMass, data.EntityMods.engineData.Config, data.EntityMods.engineData.GearboxFinal, data.EntityMods.engineData.GearboxRatio, data.EntityMods.engineData.SoundOn, data.EntityMods.engineData.SoundOff, data.EntityMods.engineData.Starter, 1) --duplicator.GenericDuplicatorFunction(ply, data) true
 end, "Data")
 
 
@@ -107,26 +115,27 @@ function TOOL:LeftClick( trace, owner )
 
 	local Pos = trace.HitPos - trace.HitNormal + Vector(0, 0, 10)
 	local Ang = Angle(0,0,0)
-	local SSEMEngine = MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter)
+	local SSEMEngine = MakeEngine(ply, Pos, Ang, Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow, Engine_Idle, Engine_Redline, Engine_FlywheelMass, Engine_Configuration, Gearbox_Finaldrive, Gearbox_Gears, Engine_SoundOn, Engine_SoundOff, Engine_Starter, 0)
 	if not IsValid(SSEMEngine) then return end	
 
 	undo.Create("SSEM Engine")
 		undo.AddEntity( SSEMEngine )
 		undo.SetPlayer( ply )
 	undo.Finish()
+	cleanup.Register( "SSEM Engine" )
 	ply:AddCleanup( "SSEM Engine", SSEMEngine )
 
 end
-
-
 
 
 function TOOL:RightClick( trace )
 	if CLIENT then return end
 	if (trace.Entity:GetClass() == "ssem_engine") then
 		local caller = self:GetOwner()
-		trace.Entity:Setup(caller:GetInfoNum( "SSEM_Engine_Bore" , -1), caller:GetInfoNum( "SSEM_Engine_Stroke" , -1), caller:GetInfoNum( "SSEM_Engine_Cylinders" , -1), caller:GetInfoNum( "SSEM_Engine_Airflow" , -1), caller:GetInfoNum( "SSEM_Engine_Idle" , -1), caller:GetInfoNum( "SSEM_Engine_Redline" , -1), caller:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1), caller:GetInfoNum( "SSEM_Engine_Displacement" , -1), caller:GetInfoNum( "SSEM_Engine_Configuration" , -1), caller:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1), caller:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOn", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOff", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1))
+		trace.Entity:Setup(caller:GetInfoNum( "SSEM_Engine_Bore" , -1), caller:GetInfoNum( "SSEM_Engine_Stroke" , -1), caller:GetInfoNum( "SSEM_Engine_Cylinders" , -1), caller:GetInfoNum( "SSEM_Engine_Airflow" , -1), caller:GetInfoNum( "SSEM_Engine_Idle" , -1), caller:GetInfoNum( "SSEM_Engine_Redline" , -1), caller:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1), caller:GetInfoNum( "SSEM_Engine_Configuration" , -1), caller:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1), caller:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOn", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOff", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1), 0)
 		trace.Entity:ShowOutput()
+
+		
 		-- Set new mass if updated :)
 		Engine_Mass = math.Round((math.floor(trace.Entity:GetDisplacement() * 45 + trace.Entity:GetCylinders() * 4 + math.Clamp(trace.Entity:GetEngineConfig(), 0, 1) * 10)), 0)
 		Engine_Mass = Engine_Mass + trace.Entity:GetFlywheelMass()

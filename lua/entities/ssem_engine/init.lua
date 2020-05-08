@@ -565,7 +565,7 @@ function ENT:Think()
 				phys:ApplyForceOffset(right * wheelpower, pos - forward)
 				phys:ApplyForceOffset(right *  -wheelpower, pos + forward)
 			end
-			
+			print(Flywheel_Power)
 		end
 	   
 		Gearbox_Feedback = (Flywheel_RPM * self.Gearbox_Ratio - self.Engine_RPM) / Engine_FlywheelMass
@@ -584,12 +584,9 @@ function ENT:Think()
 	WireLib.TriggerOutput(self, "Engine_RPM", self.Engine_RPM)
 	
 	-- Audio
-	self.Engine_Volume = self.Engine_Volume + (max(self.Engine_Throttle ^ 1.25, (self.Engine_RPM / 9000) * 0.25) - self.Engine_Volume) * 0.2
+	self.Engine_Volume = self.Engine_Volume + (max(math.abs(self.Engine_Throttle) ^ 1.25, ((self.Engine_RPM) / 9000) * 0.25) - self.Engine_Volume) * 0.2
 	
 	local pitch = self.Engine_Active and self.Engine_RPM / 9000 * 155 + 50 or 0
-
-	 
-	
 
 	if self.CSoundEngineOn then
 		self.CSoundEngineOn:ChangePitch(pitch)
@@ -654,11 +651,6 @@ end
 
 function ENT:Use(activator, caller, ent)
 	if IsValid(caller) and caller:IsPlayer() then
-			for k, ent in pairs(self.Flywheel) do
-				local phys = ent:GetPhysicsObject()
-				local pos = ent:GetPos()
-					if IsValid(phys) then
-
 						RunConsoleCommand("SSEM_Engine_Bore", self:GetStoredInfo().Bore)
 						RunConsoleCommand("SSEM_Engine_Stroke", self:GetStoredInfo().Stroke)
 						RunConsoleCommand("SSEM_Engine_Cylinders", self:GetStoredInfo().Cylinders)
@@ -672,8 +664,6 @@ function ENT:Use(activator, caller, ent)
 						RunConsoleCommand("SSEM_Engine_Sound_EngineOff", self:GetStoredInfo().SoundOff)
 						RunConsoleCommand("SSEM_Engine_Sound_EngineStarter", self:GetStoredInfo().Starter)
 						RunConsoleCommand("SSEM_Engine_Configuration", self:GetStoredInfo().Config)
-					end
-			end	
 	end
 end
 
