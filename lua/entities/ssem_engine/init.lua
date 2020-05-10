@@ -183,10 +183,11 @@ function ENT:Setup(Engine_Bore, Engine_Stroke, Engine_Cylinders, Engine_Airflow,
 
 	local Gearbox_Ratio_Parse = string.Split( Gearbox_Gears, "," )
 
+	PrintTable(Gearbox_Ratio_Parse)
 	self.Gearbox_Ratios = {}
 
 	for i=1, table.Count(Gearbox_Ratio_Parse) - 1 do 
-		self.Gearbox_Ratios[table.Count(Gearbox_Ratio_Parse) - i] = Gearbox_Ratio_Parse[i]
+		self.Gearbox_Ratios[i] = Gearbox_Ratio_Parse[i]
 	end
 	self.Gearbox_Ratios[-1] = Gearbox_Ratio_Parse[table.Count(Gearbox_Ratio_Parse)] --Add the negative (reverse gear)
 
@@ -340,6 +341,7 @@ function ENT:ShiftGear(gear)
 end
 
 function ENT:Think() 
+	print(self.Gearbox_Ratio)
 	local dt = FrameTime()
 	local Engine_Redline = self:GetRedline()
 	
