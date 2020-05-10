@@ -5,7 +5,7 @@ TOOL.ConfigName		= ""
 
 
 --THINGS TO DO--
---Add cleanup
+
 
 
 
@@ -132,6 +132,14 @@ function TOOL:RightClick( trace )
 	if CLIENT then return end
 	if (trace.Entity:GetClass() == "ssem_engine") then
 		local caller = self:GetOwner()
+		--[[
+		if trace.Entity:GetEngineConfig() == 0 && caller:GetInfoNum( "SSEM_Engine_Configuration" , -1) == 1 then
+			trace.Entity:SetAngles(trace.Entity:GetAngles() + Angle(0,0,-90))
+		end
+		if trace.Entity:GetEngineConfig() == 1 && caller:GetInfoNum( "SSEM_Engine_Configuration" , -1) == 0 then
+			trace.Entity:SetAngles(trace.Entity:GetAngles() + Angle(0,0,90))
+		end
+		]]--
 		trace.Entity:Setup(caller:GetInfoNum( "SSEM_Engine_Bore" , -1), caller:GetInfoNum( "SSEM_Engine_Stroke" , -1), caller:GetInfoNum( "SSEM_Engine_Cylinders" , -1), caller:GetInfoNum( "SSEM_Engine_Airflow" , -1), caller:GetInfoNum( "SSEM_Engine_Idle" , -1), caller:GetInfoNum( "SSEM_Engine_Redline" , -1), caller:GetInfoNum( "SSEM_Engine_FlywheelMass" , -1), caller:GetInfoNum( "SSEM_Engine_Configuration" , -1), caller:GetInfoNum( "SSEM_Engine_Gearbox_FinalDrive" , -1), caller:GetInfo( "SSEM_Engine_Gearbox_Ratios" , -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOn", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineOff", -1), caller:GetInfo( "SSEM_Engine_Sound_EngineStarter", -1), 0)
 		trace.Entity:ShowOutput()
 

@@ -391,6 +391,7 @@ function ENT:Think()
 	up = -self:GetUp() 
 	end
 
+if (table.Count(self.Flywheel) != 0) then
 	for k, ent in pairs(self.Flywheel) do
 		local phys = ent:GetPhysicsObject()
 		if IsValid(phys) then	
@@ -415,7 +416,7 @@ function ENT:Think()
 			end
 		end
 	end
-	
+end
 	if Flywheel_Count > 0 then
 		Flywheel_RPM = Flywheel_RPM / Flywheel_Count
 		
@@ -565,7 +566,6 @@ function ENT:Think()
 				phys:ApplyForceOffset(right * wheelpower, pos - forward)
 				phys:ApplyForceOffset(right *  -wheelpower, pos + forward)
 			end
-			print(Flywheel_Power)
 		end
 	   
 		Gearbox_Feedback = (Flywheel_RPM * self.Gearbox_Ratio - self.Engine_RPM) / Engine_FlywheelMass
@@ -671,14 +671,6 @@ function ENT:TriggerInput(iname, value)
 	if iname == "WHEELS" then
 		self.Flywheel = value
 	elseif iname == "Ignition" then
-		if self.Engine_Ignition == 1 and not self.Engine_Active then
-			self.Engine_Ignition = 2
-		end
-		
-		if self.Engine_Ignition == 2 and value <= 0 then
-			self.Engine_Ignition = 1
-		end
-		
 		if value > 0 then
 			if self.Engine_Ignition == 0 then
 				self.Engine_Ignition = 1
@@ -687,6 +679,14 @@ function ENT:TriggerInput(iname, value)
 			if self.Engine_Ignition == 1 and self.Engine_Active then
 				self.Engine_Ignition = 0
 			end
+		end
+
+		if self.Engine_Ignition == 1 and not self.Engine_Active then
+			self.Engine_Ignition = 2
+		end
+		
+		if self.Engine_Ignition == 2 and value <= 0 then
+			self.Engine_Ignition = 1
 		end
 	elseif iname == "Throttle" then
 		self.Key_W = clamp(value, 0, 1)
@@ -723,7 +723,10 @@ end
 				self.CSoundEngineOff:PlayEx(0, 100)
 			end
 
-		
+		if not self.SoundStart then
+				self.SoundStart	 = CreateSound(self, Engine_Starter)
+				self.SoundStart:PlayEx(0, 100)
+			end
 
 end
 
