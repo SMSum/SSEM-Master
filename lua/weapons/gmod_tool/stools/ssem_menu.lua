@@ -13,6 +13,7 @@ if CLIENT then
 	
 	language.Add( "tool.ssem_menu.name", "SSEM Menu" )
     language.Add( "tool.ssem_menu.desc", "Spawns a Simulated Engine!" )
+    language.Add( "tool.ssem_menu.vconfig", "Engine Layout")
     language.Add( "SBoxLimit_SSEM_Custom_Engines", "Maximum SSEM Custom Engines Reached!" )
 
 
@@ -23,13 +24,13 @@ local function ToolInfo(name, desc)
 end
 
 -- Info
-ToolInfo("info_1", "Spawns a Simulated Engine, currently no UI. Use the console ConVars to edit engine settings.")
+ToolInfo("info_1", "Spawns a Simulated Engine")
 -- left click
 ToolInfo("left_1", "Spawn an engine")
 -- Right click
 ToolInfo("right_1", "Update an engine")
 -- Use 
-ToolInfo("use_1", "Copy engine data to console ConVars")
+ToolInfo("use_1", "Copy engine data")
 
     --ENGINE CONVARS-- DONT TOUCH!
     --Base Config is a Toyota 4AGE
@@ -163,6 +164,20 @@ end
 
 function TOOL.BuildCPanel( CPanel )
 	CPanel:AddControl( "Header", { Text = "#tool.ssem_menu.name", Description	= "#tool.ssem_menu.desc" })
+
+	CPanel:AddControl( "Slider", { Label = "Cylinders", Min = 1, Max = 12, Command = "SSEM_Engine_Cylinders" })
+	CPanel:AddControl( "Slider", { Label = "Bore (mm)", Min = 1, Max = 220, Command = "SSEM_Engine_Bore" })
+	CPanel:AddControl( "Slider", { Label = "Stroke (mm)", Min = 1, Max = 220, Command = "SSEM_Engine_Stroke" })
+	CPanel:AddControl( "Slider", { Label = "Airflow", Min = 1, Max = 1000, Command = "SSEM_Engine_Airflow" })
+	CPanel:AddControl( "Slider", { Label = "Idle RPM", Min = 1, Max = 10000, Command = "SSEM_Engine_Idle" })
+	CPanel:AddControl( "Slider", { Label = "Redline RPM", Min = 1, Max = 20000, Command = "SSEM_Engine_Redline" })
+	CPanel:AddControl( "Slider", { Label = "Flywheel Mass", Min = 1, Max = 100, Command = "SSEM_Engine_FlywheelMass" })
+
+	local combo = CPanel:AddControl( "ListBox", { Label = "#tool.ssem_menu.vconfig" } )
+	combo:AddOption("Inline", { SSEM_Engine_Configuration = 0})
+	combo:AddOption("V", { SSEM_Engine_Configuration = 1})
+
+	CPanel:AddControl( "Textbox", { Label = "On Sound", Command = "SSEM_Engine_Sound_EngineOn" })
+	CPanel:AddControl( "Textbox", { Label = "Off Sound", Command = "SSEM_Engine_Sound_EngineOff" })
+	CPanel:AddControl( "Textbox", { Label = "Starter Sound", Command = "SSEM_Engine_Sound_EngineStarter" })
 end
-
-
